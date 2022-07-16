@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const port = 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 
 app.use(cors())
 app.use(express.json())
@@ -21,15 +22,34 @@ async function run() {
     try {
         const database = client.db("foodMaster");
         const usersCollection = database.collection("users");
+        // data send to mongodb server
         app.post('/users', async (req, res) => {
             const newUser = req.body;
             console.log(newUser);
             const result = await usersCollection.insertOne(newUser)
             res.json(result);
-            // console.log(`A document was inserted with the _id: ${result.insertedId}`);
+        })
+        // get API from database
+        app.get('/users', async (req, res) => {
+            const cursor = usersCollection.find({});
+            const users = await cursor.toArray();
+            res.send(users);
+        })
+        // delete user from database
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(query);
+            console.log('delleted user', result);
+            res.json(result);
+        });
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const user = await usersCollection.findOne(query);
+            res.send(user);
         })
 
-        // 
     }
     finally {
         // await client.close();
