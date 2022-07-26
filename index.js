@@ -12,8 +12,6 @@ app.get('/', (req, res) => {
     res.send('running my CRUD server...')
 })
 
-
-
 const uri = "mongodb+srv://mydbuser2:KGR1ltP7vpbcSQ23@cluster0.4vhi1hx.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -48,6 +46,21 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const user = await usersCollection.findOne(query);
             res.send(user);
+        })
+        //update user
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateUser = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true }//optional
+            const updateDoc = {
+                $set: {
+                    name: updateUser.name,
+                    email: updateUser.email
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.json(result)
         })
 
     }
